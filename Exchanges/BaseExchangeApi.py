@@ -162,6 +162,7 @@ class BaseExchangeApi(metaclass=ABCMeta):
         if not self.check_order_size(symbol, size, price): return
 
         size = int(size * 10**size_precision) / 10**size_precision
+        price = price - tick_size if side == 'buy' else price + tick_size
         price = round(round(price/tick_size)*tick_size, self.get_price_precision(symbol))
 
         res = self.rest.place_order(
