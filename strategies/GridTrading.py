@@ -18,6 +18,7 @@ class GridTrading(Base):
 
         self.current_sell_price = None
         self.current_buy_price = None
+        self.tick_size = self.api.get_tick_size(symbol=self.symbol)
 
     def _reset_active_orders(self):
         # 第一版只挂两个单， 看看后面能不能再优化
@@ -58,8 +59,13 @@ class GridTrading(Base):
 
     def update_current_price(self):
         ma = self.api.get_ma(symbol=self.symbol, period=self.ma_kline_period, size=self.ma_kline_size, source=self.ma_kline_source)
+        ticker = self.api.get_ticker(self.symbol)
         self.current_sell_price = ma * (1 + self.spread_rate)
         self.current_buy_price = ma * (1 - self.spread_rate)
+        if self.current_buy_price >= ticker['bid_price']:
+            self.current_buy_price = ticker['bid_price'] + 2 * self.tick_size
+        if self.current_sell_price <= ticker['ask_price']:
+            self.current_sell_price = ticker['bid_price'] - 2 * self.tick_size
         data = {
             "current_sell_price": self.current_sell_price,
             "current_buy_price": self.current_buy_price,
