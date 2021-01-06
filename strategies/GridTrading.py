@@ -37,6 +37,8 @@ class GridTrading(Base):
         self.trade_loop_period = self.config['trade_loop_period']
         self.spread_rate = self.config['spread_rate']
         self.reorder_rate = self.config['reorder_rate']
+        self.min_avail_base_coin = self.config.get('min_avail_base_coin', 0.1)
+        self.min_avail_quote_coin = self.config.get('min_avail_quote_coin', 0.1)
 
         self.ma_kline_source = self.config.get('ma_kline_source', 'close')
 
@@ -80,6 +82,10 @@ class GridTrading(Base):
         for side, order in self.active_orders.items():
             if not order:
                 self.api.place_order(**self.gen_order_info(side, base_balance['free'], quote_balance['free']))
+            elif order['side'] == 'buy' and quote_balance['free'] > self.min_avail_quote_coin:
+                self.api.cancel_order(order['order_id'])
+            elif order['side'] == 'sell' and base_balance['free'] > self.min_avail_base_coin:
+                self.api.cancel_order(order['order_id'])
         logger.info(f"({self.name}) current balances: {base_balance} {quote_balance}")
 
     def gen_order_info(self, side, base_balance, quote_balance):
