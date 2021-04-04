@@ -67,7 +67,7 @@ class GridTrading(Base):
         if self.current_buy_price >= ticker['bid_price']:
             self.current_buy_price = ticker['bid_price'] + 2 * self.tick_size
         if self.current_sell_price <= ticker['ask_price']:
-            self.current_sell_price = ticker['bid_price'] - 2 * self.tick_size
+            self.current_sell_price = ticker['ask_price'] - 2 * self.tick_size
         data = {
             "current_sell_price": self.current_sell_price,
             "current_buy_price": self.current_buy_price,
